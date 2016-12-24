@@ -3,24 +3,36 @@ import org.json.JSONException;
 import java.io.IOException;
 
 public class InputParser {
+
     public static void run(String[] args) throws IOException, JSONException, IndexOutOfBoundsException {
 
         String name;
         if(args[0].equals("sumexpenses")) {
             name = args[1];
-            Integer id = SejmTracker.parliament.get(name);
-            MP mp = new MP(id,name,JsonParser.readJsonFromUrl(makeUrl(name,"expenses")));
-            System.out.println(mp.toString()+" wszystkie wydatki "+mp.sumExpenses());
+            System.out.println("Debug : " + name);
+            if (SejmTracker.parliament.containsKey(name)) {
+                Integer id = SejmTracker.parliament.get(name);
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
+                System.out.println(mp.toString() + " wszystkie wydatki " + mp.sumExpenses());
+            }
+            else {
+                //RZUC EXCEPTION - NIE MA TAKIEGO POSLA
+            }
         }
         else if(args[0].equals("smallexpenses")) {
             name = args[1];
-            Integer id = SejmTracker.parliament.get(name);
-            MP mp = new MP(id,name,JsonParser.readJsonFromUrl(makeUrl(name,"expenses")));
-            System.out.println(mp.toString()+" wszystkie wydatki "+mp.smallExpenses());
+            if (SejmTracker.parliament.containsKey(name)) {
+                Integer id = SejmTracker.parliament.get(name);
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
+                System.out.println(mp.toString() + " wszystkie wydatki " + mp.smallExpenses());
+            }
+            else {
+                //EXCE
+            }
         }
         else {
-            name = args[1]; // KADENCJA
-            Parliament.makeParliament(JsonParser.readJsonFromUrl(makeUrl(name, "parliament")));
+            name = args[1]; // name to numer kadnecji ---> w makeUrl tworzy się odpowiedni adres
+            Parliament.makeMPList(JsonParser.readJsonFromUrl(makeUrl(name, "parliament")));
 
             if (args[0].equals("avgexpenses"))
                 System.out.println("Srednie wydatki " + Parliament.averageExpenses());
@@ -57,3 +69,11 @@ public class InputParser {
         return url;
     }
 }
+/*
+INPUT EXAMPLES
+sumexpenses "Jan Kowalski"  //posel jan kowalski, jego srednie wyadtki
+avgexpenses 7 //srednie wydatki poslow 7 kadencji
+longesttravels 8 //posel 8 kadencji, najdluzsza podroz
+
+
+ */

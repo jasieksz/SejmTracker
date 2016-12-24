@@ -2,6 +2,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,22 +62,45 @@ public class Parliament {
         return memberList;
     }
 
-    public static HashMap<String,Integer> makeParliament(JSONObject parliamentObject) throws JSONException {
-
-        makeMPList(parliamentObject);
+    public static HashMap<String,Integer> makeParliament(JSONObject parliamentObject) throws JSONException, IOException {
         HashMap<String,Integer> result = new HashMap<>();
-        JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
+        Integer pages = getNumberOfLast(parliamentObject);
 
-        for (Object mp: parliament) {
-            JSONObject mpObject = (JSONObject) mp;
-            String id = mpObject.getString("id");
-            String nazwa = mpObject.getJSONObject("data").getString("ludzie.nazwa");
-            result.put(nazwa,valueOf(id));
+        while (pages > 0) {
+            JSONObject nextPage = JsonParser.readJsonFromUrl(getLinkToNext(parliamentObject));
+            JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
+
+            for (Object mp : parliament) {
+                JSONObject mpObject = (JSONObject) mp;
+                String id = mpObject.getString("id");
+                String nazwa = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+                result.put(nazwa, valueOf(id));
+            }
+
+            parliamentObject = nextPage;
+            pages--;
         }
         return result;
     }
 
-    private static void makeMPList(JSONObject parliamentObject){
+    public static void makeMPList(JSONObject parliamentObject){ //tworzy liste MP danej kadencji
+        //TODO : "kod jak makeParliament, tylko dodac fragment konstruktora MP.details i wrzucoc do listy
 
+    }
+
+    private static String getLinkToNext(JSONObject jsonObject) {
+        try { //ostatnia strona nie ma linku next , czy bedzie wtedy exception??/
+            return jsonObject.getJSONObject("Links").getString("next");
+        }catch (JSONException e){
+            return null;
+        }
+    }
+
+    private static Integer getNumberOfLast(JSONObject jsonObject){
+        String last = jsonObject.getJSONObject("Links").getString("last");
+        last = new StringBuilder(last).reverse().toString();
+        last = last.substring(0,last.indexOf("=")-1); // czy dobrze indeksy, zakaldam ze parametr page=1 ostatni
+        Integer result = valueOf(last);
+        return result;
     }
 }

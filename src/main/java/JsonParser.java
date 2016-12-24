@@ -1,31 +1,21 @@
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.HashMap;
 
 public class JsonParser {
-    public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
+
+    public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException{
 
         try(InputStream is = new URL(url).openStream()) {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            String jsonText = readAll(rd);
-            return new JSONObject(jsonText);
+            return new JSONObject(IOUtils.toString(is, "UTF-8"));
         }
     }
 
-    //TODO : " brzydko - do poprawienia readALL ---- APACHE COMMONS IO ---> gradle!!!
-    private static String readAll(Reader rd) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        int cp;
-        while ((cp = rd.read()) != -1) {
-            sb.append((char) cp);
-        }
-        return sb.toString();
-    }
-
+    /*
     //towrzy hash mape klucz,wartosc pliku JSON
     public static HashMap<String,Integer> parseJson(JSONObject jsonObj){ // Czy to będzie <String,String>
         HashMap<String,Integer> result = new HashMap<>();
@@ -33,4 +23,6 @@ public class JsonParser {
         return result;
 
     }
+    */
+
 }

@@ -2,7 +2,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MP {
-    public final Integer id; //ludzie.id albo id TODO: "ktore id wybrac"
+    public final Integer id; //id
     public final String name; //imie i nazwisko =JSON=> ludzie.nazwa
     private final JSONObject details;
 
