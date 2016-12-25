@@ -25,11 +25,9 @@ public class SejmTracker {
     private static String run(String[] args) {
 
         try {
-            parliament = Parliament.makeParliament(JsonParser.readJsonFromUrl(allMPsUrl));
-            System.out.println(parliament.size()); //wyszlo 248 malo cos
-            //InputParser.run(args);
-
-
+            parliament = Parliament.makeParliament(JsonParser.readJsonFromUrl(allMPsUrl)); //size = 728
+            System.out.println("time");
+            InputParser.run(args);
         } catch (IOException | JSONException e) {
             e.printStackTrace();
         }

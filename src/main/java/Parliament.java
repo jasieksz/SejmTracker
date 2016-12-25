@@ -63,13 +63,14 @@ public class Parliament {
     }
 
     public static HashMap<String,Integer> makeParliament(JSONObject parliamentObject) throws JSONException, IOException {
+
         HashMap<String,Integer> result = new HashMap<>();
         Integer pages = getNumberOfLast(parliamentObject);
 
-        while (pages > 0) {
-            JSONObject nextPage = JsonParser.readJsonFromUrl(getLinkToNext(parliamentObject));
-            JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
 
+        while (pages > 0 && isLinkToNext(parliamentObject)) {
+
+            JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
             for (Object mp : parliament) {
                 JSONObject mpObject = (JSONObject) mp;
                 String id = mpObject.getString("id");
@@ -77,9 +78,21 @@ public class Parliament {
                 result.put(nazwa, valueOf(id));
             }
 
+            String nextLink = getLinkToNext(parliamentObject);
+            JSONObject nextPage = JsonParser.readJsonFromUrl(nextLink);
+
             parliamentObject = nextPage;
             pages--;
         }
+//PRZETRWOZENIE OSTANTIEJ STRONY
+        JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
+        for (Object mp : parliament) {
+            JSONObject mpObject = (JSONObject) mp;
+            String id = mpObject.getString("id");
+            String nazwa = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+            result.put(nazwa, valueOf(id));
+        }
+
         return result;
     }
 
@@ -96,10 +109,20 @@ public class Parliament {
         }
     }
 
+    private static Boolean isLinkToNext(JSONObject jsonObject) {
+        try { //ostatnia strona nie ma linku next , czy bedzie wtedy exception??/
+            String s = jsonObject.getJSONObject("Links").getString("next");
+            return true;
+        }catch (JSONException e){
+            return false;
+        }
+    }
+
     private static Integer getNumberOfLast(JSONObject jsonObject){
         String last = jsonObject.getJSONObject("Links").getString("last");
         last = new StringBuilder(last).reverse().toString();
-        last = last.substring(0,last.indexOf("=")-1); // czy dobrze indeksy, zakaldam ze parametr page=1 ostatni
+        last = last.substring(0,last.indexOf("=")); // czy dobrze indeksy, zakaldam ze parametr page=1 ostatni
+        last = new StringBuilder(last).reverse().toString();
         Integer result = valueOf(last);
         return result;
     }

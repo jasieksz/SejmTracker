@@ -7,11 +7,12 @@ public class InputParser {
     public static void run(String[] args) throws IOException, JSONException, IndexOutOfBoundsException {
 
         String name;
+        //1 POSEL - suma wydatkow
         if(args[0].equals("sumexpenses")) {
             name = args[1];
-            System.out.println("Debug : " + name);
             if (SejmTracker.parliament.containsKey(name)) {
                 Integer id = SejmTracker.parliament.get(name);
+                System.out.println("Debug : " + makeUrl(name, "expenses"));
                 MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
                 System.out.println(mp.toString() + " wszystkie wydatki " + mp.sumExpenses());
             }
@@ -19,6 +20,7 @@ public class InputParser {
                 //RZUC EXCEPTION - NIE MA TAKIEGO POSLA
             }
         }
+        //1 POSEL - drobne wydatki na naprawy
         else if(args[0].equals("smallexpenses")) {
             name = args[1];
             if (SejmTracker.parliament.containsKey(name)) {
@@ -30,6 +32,7 @@ public class InputParser {
                 //EXCE
             }
         }
+        //CALY PARLAMENT
         else {
             name = args[1]; // name to numer kadnecji ---> w makeUrl tworzy się odpowiedni adres
             Parliament.makeMPList(JsonParser.readJsonFromUrl(makeUrl(name, "parliament")));
@@ -58,7 +61,7 @@ public class InputParser {
         String url = "https://api-v3.mojepanstwo.pl/dane/poslowie";
         Integer id = SejmTracker.parliament.get(name);
         if (option.equals("expenses"))
-            url.join("","/"+id.toString(),".json","?layers[]=wydatki");
+            url = String.join("",url,"/",id.toString(),".json","?layers[]=wydatki");
         if (option.equals("travels"))
             url.join("","/"+id.toString(),".json","?layers[]=wyjazdy");
         if (option.equals("everything"))
