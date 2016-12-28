@@ -57,17 +57,16 @@ public class InputParser {
 
 
     private static String makeUrl(String name, String option){
-
         String url = "https://api-v3.mojepanstwo.pl/dane/poslowie";
         Integer id = SejmTracker.parliament.get(name);
         if (option.equals("expenses"))
             url = String.join("",url,"/",id.toString(),".json","?layers[]=wydatki");
         if (option.equals("travels"))
-            url.join("","/"+id.toString(),".json","?layers[]=wyjazdy");
+            url = String.join("",url,"/"+id.toString(),".json","?layers[]=wyjazdy");
         if (option.equals("everything"))
-            url.join("","/"+id.toString(),".json","?layers[]=wydatki&layers[]=wyjazdy");
+            url = String.join("",url,"/"+id.toString(),".json","?layers[]=wydatki&layers[]=wyjazdy");
         if (option.equals("parliament"))
-            url.join("",".json?conditions[poslowie.kadencja]="+name);
+            url = String.join("",url,".json?conditions[poslowie.kadencja]="+name);
 
         return url;
     }

@@ -13,10 +13,14 @@ public class Parliament {
     private static List<MP> mpList = new ArrayList<>(); //lista mp aktualnej kadencji
 
     public static Double averageExpenses(){
-
-        return 0.0;
+        Double result = 0.0;
+        for (MP tmpMp : mpList){
+            result += tmpMp.sumExpenses();
+        }
+        result = result/mpList.size();
+        return result;
     }
-
+//TODO : "Funkcje wyższego rzędu, java 8"
     public static MP mostTravels(){
         MP member = null;
         Integer tmpMax = -1;
@@ -68,7 +72,7 @@ public class Parliament {
         Integer pages = getNumberOfLast(parliamentObject);
 
 
-        while (pages > 0 && isLinkToNext(parliamentObject)) {
+        while (pages > 0 && isLinkToNext(parliamentObject)) { //wystarczy jeden warunek
 
             JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
             for (Object mp : parliament) {
@@ -98,7 +102,8 @@ public class Parliament {
 
     public static void makeMPList(JSONObject parliamentObject){ //tworzy liste MP danej kadencji
         //TODO : "kod jak makeParliament, tylko dodac fragment konstruktora MP.details i wrzucoc do listy
-
+        List<MP> result = new ArrayList<>();
+        Integer pages = getNumberOfLast(parliamentObject);
     }
 
     private static String getLinkToNext(JSONObject jsonObject) {
