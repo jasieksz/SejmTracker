@@ -25,8 +25,11 @@ public class InputParser {
             name = args[1];
             if (SejmTracker.parliament.containsKey(name)) {
                 Integer id = SejmTracker.parliament.get(name);
-                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
-                System.out.println(mp.toString() + " wszystkie wydatki " + mp.smallExpenses());
+                //MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
+                //System.out.println(mp.toString() + " male wydatki " + mp.smallExpenses());
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "everything")));
+                System.out.println(mp.toString()+" podroze IT "+mp.italyTravels().toString());
+
             }
             else {
                 //EXCE
@@ -56,7 +59,7 @@ public class InputParser {
     }
 
 
-    private static String makeUrl(String name, String option){
+    public static String makeUrl(String name, String option){
         String url = "https://api-v3.mojepanstwo.pl/dane/poslowie";
         Integer id = SejmTracker.parliament.get(name);
         if (option.equals("expenses"))

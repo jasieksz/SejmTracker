@@ -83,9 +83,7 @@ public class Parliament {
             }
 
             String nextLink = getLinkToNext(parliamentObject);
-            JSONObject nextPage = JsonParser.readJsonFromUrl(nextLink);
-
-            parliamentObject = nextPage;
+            parliamentObject = JsonParser.readJsonFromUrl(nextLink);
             pages--;
         }
 //PRZETRWOZENIE OSTANTIEJ STRONY
@@ -100,10 +98,36 @@ public class Parliament {
         return result;
     }
 
-    public static void makeMPList(JSONObject parliamentObject){ //tworzy liste MP danej kadencji
-        //TODO : "kod jak makeParliament, tylko dodac fragment konstruktora MP.details i wrzucoc do listy
-        List<MP> result = new ArrayList<>();
+    public static void makeMPList(JSONObject parliamentObject) throws IOException { //tworzy liste MP danej kadencji
+        //TODO : "poprawic warunki w petli tak zeby obslugiwala ostatnio strone"
         Integer pages = getNumberOfLast(parliamentObject);
+       // MP tmpMP = new MP(2,"name",JsonParser.readJsonFromUrl(InputParser.makeUrl("name","everything")));
+
+        while (pages > 0 && isLinkToNext(parliamentObject)) { //wystarczy jeden warunek
+            JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
+            for (Object mp : parliament) {
+                JSONObject mpObject = (JSONObject) mp;
+                Integer id = valueOf(mpObject.getString("id"));
+                String name = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+                JSONObject details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
+                MP tmpMP = new MP(id,name,details);
+                mpList.add(tmpMP);
+            }
+
+            String nextLink = getLinkToNext(parliamentObject);
+            parliamentObject = JsonParser.readJsonFromUrl(nextLink);
+            pages--;
+        }
+        //PRZETRWOZENIE OSTANTIEJ STRONY
+        JSONArray parliament = parliamentObject.getJSONArray("Dataobject");
+        for (Object mp : parliament) {
+            JSONObject mpObject = (JSONObject) mp;
+            Integer id = valueOf(mpObject.getString("id"));
+            String name = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+            JSONObject details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
+            MP tmpMP = new MP(id,name,details);
+            mpList.add(tmpMP);
+        }
     }
 
     private static String getLinkToNext(JSONObject jsonObject) {
@@ -128,7 +152,6 @@ public class Parliament {
         last = new StringBuilder(last).reverse().toString();
         last = last.substring(0,last.indexOf("=")); // czy dobrze indeksy, zakaldam ze parametr page=1 ostatni
         last = new StringBuilder(last).reverse().toString();
-        Integer result = valueOf(last);
-        return result;
+        return valueOf(last);
     }
 }

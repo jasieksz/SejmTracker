@@ -11,7 +11,11 @@ public class SejmTracker {
 
     public static void main(String[] args) {
         try {
+            long startTime = System.currentTimeMillis();
             System.out.println(run(args));
+            long stopTime = System.currentTimeMillis();
+            long elapsedTime = stopTime - startTime;
+            System.out.println(elapsedTime);
         }
         catch (IllegalArgumentException e){
             e.printStackTrace();
@@ -26,7 +30,6 @@ public class SejmTracker {
 
         try {
             parliament = Parliament.makeParliament(JsonParser.readJsonFromUrl(allMPsUrl)); //size = 728
-            System.out.println("time");
             InputParser.run(args);
         } catch (IOException | JSONException e) {
             e.printStackTrace();
@@ -36,3 +39,4 @@ public class SejmTracker {
         return "result";
     }
 }
+//"[Rafał Grupiński, Joanna Fabisiak, Andrzej Czerwiński, Cezary Grabarczyk, Agnieszka Pomaska, Jan Dziedziczak, Grzegorz Raniewicz, Antoni Mężydło, Roman Jacek Kosecki, Ireneusz Raś, Grzegorz Schetyna, Stefan Niesiołowski, Sławomir Neumann, Jakub Rutnicki, Krystyna Skowrońska, Jacek Falfus, Adam Abramowicz, Ewa Kopacz, Anna Nemś, Robert Tyszkiewicz, Marek Rząsa, Cezary Tomczyk, Michał Jaros, Marek Matuszewski, Wojciech Ziemniak"]
