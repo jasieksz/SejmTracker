@@ -25,10 +25,12 @@ public class InputParser {
             name = args[1];
             if (SejmTracker.parliament.containsKey(name)) {
                 Integer id = SejmTracker.parliament.get(name);
-                //MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
-                //System.out.println(mp.toString() + " male wydatki " + mp.smallExpenses());
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
+                System.out.println(mp.toString() + " male wydatki " + mp.smallExpenses());
+                /*
                 MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "everything")));
                 System.out.println(mp.toString()+" podroze IT "+mp.italyTravels().toString());
+                */
 
             }
             else {
