@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.lang.Integer.valueOf;
 
@@ -14,9 +15,11 @@ public class Parliament {
 
     public static Double averageExpenses(){
         Double result = 0.0;
+        /*
         for (MP tmpMp : mpList)
             result += tmpMp.sumExpenses();
-        result = result/mpList.size();
+        result = result/mpList.size();*/
+        result = mpList.parallelStream().collect(Collectors.summingDouble(MP::sumExpenses))/mpList.size();
         return result;
     }
 //TODO : "Funkcje wyższego rzędu, java 8"
@@ -56,13 +59,15 @@ public class Parliament {
         return member;
     }
 
-    public static List<MP> italyTravels(){
-        List<MP> memberList = new ArrayList<>();
-        for (MP tmpMp : mpList){
+    public static List<String> italyTravels(){
+        //List<MP> memberList = new ArrayList<>();
+       /* for (MP tmpMp : mpList){
             if (tmpMp.italyTravels())
                 memberList.add(tmpMp);
-        }
-        return memberList;
+        }*/
+        //return memberList;
+        return mpList.stream().filter(MP::italyTravels).map(MP::toString).collect(Collectors.toList());
+        //return deputies.stream().filter(Deputy::visitedItaly).map(Deputy::getName).collect(Collectors.toList()).toString();
     }
 
     public static HashMap<String,Integer> makeParliament(JSONObject parliamentObject) throws JSONException, IOException {
@@ -132,18 +137,23 @@ public class Parliament {
         return valueOf(last);
     }
 
-    private static void addMPList(JSONArray parliament) throws IOException {
+    private static void addMPList(JSONArray parliament) {
         for (Object mp : parliament) {
             JSONObject mpObject = (JSONObject) mp;
             Integer id = valueOf(mpObject.getString("id"));
             String name = mpObject.getJSONObject("data").getString("ludzie.nazwa");
-            JSONObject details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
+            JSONObject details = null;
+            try {
+                details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             MP tmpMP = new MP(id,name,details);
             mpList.add(tmpMP);
         }
     }
 
-    private static List<JSONArray> prepareParliamentLinks(JSONObject JsonPage) throws IOException {
+    public static List<JSONArray> prepareParliamentLinks(JSONObject JsonPage) throws IOException {
         List<JSONArray> result = new ArrayList<>();
         JSONObject tmpPage;
         do {
@@ -157,4 +167,13 @@ public class Parliament {
         }while (isLinkToNext(tmpPage));
         return result;
     }
+
+    public static void makeMPList2 (List<JSONArray> parlimentLinks){ //parallel solutipon
+        parlimentLinks.parallelStream().forEach(Parliament::addMPList);
+    }
+
 }
+
+//  "Cezary Grabarczyk, Antoni Mężydło, Jan Dziedziczak, Krystyna Skowrońska, Ireneusz Raś, Adam Abramowicz, Michał Jaros, Ewa Kopacz, Anna Nemś, Agnieszka Pomaska, Cezary Tomczyk, Grzegorz Raniewicz, Marek Matuszewski, Roman Jacek Kosecki, Joanna Fabisiak, Sławomir Neumann, Rafał Grupiński, Wojciech Ziemniak, Andrzej Czerwiński, Jakub Rutnicki, Robert Tyszkiewicz, Marek Rząsa, Jacek Falfus, Grzegorz Schetyna, Stefan Niesiołowski"
+
+
