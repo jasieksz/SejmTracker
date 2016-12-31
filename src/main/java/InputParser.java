@@ -40,7 +40,7 @@ public class InputParser {
         //CALY PARLAMENT
         else {
             name = args[1]; // name to numer kadnecji ---> w makeUrl tworzy się odpowiedni adres
-            //Parliament.makeMPList(JsonParser.readJsonFromUrl(makeUrl(name, "parliament")));
+            //Parliament.makeMPList(JsonParser.readJsonFromUrl(makeUrl(name, "parliament")));a
             Parliament.makeMPList2(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(makeUrl(name, "parliament"))));
 
             if (args[0].equals("avgexpenses"))
