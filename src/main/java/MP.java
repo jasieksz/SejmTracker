@@ -8,6 +8,24 @@ import static java.lang.Double.valueOf;
 import static java.lang.Integer.max;
 
 public class MP {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof MP)) return false;
+
+        MP mp = (MP) o;
+
+        if (!id.equals(mp.id)) return false;
+        return name.equals(mp.name);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + name.hashCode();
+        return result;
+    }
+
     public final Integer id; //id
     public final String name; //imie i nazwisko =JSON=> ludzie.nazwa
     private final JSONObject details;
@@ -45,7 +63,6 @@ public class MP {
     public Integer numberTravels(){ //NAJWIECEJ WYJAZDOW
         if (details.getJSONObject("layers").optJSONArray("wyjazdy") == null)
             return 0;
-
         return details.getJSONObject("layers").getJSONArray("wyjazdy").length();
     }
 

@@ -10,8 +10,8 @@ public class InputParser {
         //1 POSEL - suma wydatkow
         if(args[0].equals("sumexpenses")) {
             name = args[1];
-            if (SejmTracker.parliament.containsKey(name)) {
-                Integer id = SejmTracker.parliament.get(name);
+            if (SejmTracker.parliamentMap.containsKey(name)) {
+                Integer id = SejmTracker.parliamentMap.get(name);
                 System.out.println("Debug : " + makeUrl(name, "expenses"));
                 MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
                 System.out.println(mp.toString() + " wszystkie wydatki " + mp.sumExpenses());
@@ -23,15 +23,10 @@ public class InputParser {
         //1 POSEL - drobne wydatki na naprawy
         else if(args[0].equals("smallexpenses")) {
             name = args[1];
-            if (SejmTracker.parliament.containsKey(name)) {
-                Integer id = SejmTracker.parliament.get(name);
+            if (SejmTracker.parliamentMap.containsKey(name)) {
+                Integer id = SejmTracker.parliamentMap.get(name);
                 MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
                 System.out.println(mp.toString() + " male wydatki " + mp.smallExpenses());
-                /*
-                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "everything")));
-                System.out.println(mp.toString()+" podroze IT "+mp.italyTravels().toString());
-                */
-
             }
             else {
                 //EXCE
@@ -40,8 +35,8 @@ public class InputParser {
         //CALY PARLAMENT
         else {
             name = args[1]; // name to numer kadnecji ---> w makeUrl tworzy się odpowiedni adres
-            //Parliament.makeMPList(JsonParser.readJsonFromUrl(makeUrl(name, "parliament")));a
-            Parliament.makeMPList2(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(makeUrl(name, "parliament"))));
+            Parliament.makeMPList(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(makeUrl(name, "parliament"))));
+            System.out.println("Debug : zrobil liste poslow");
 
             if (args[0].equals("avgexpenses"))
                 System.out.println("Srednie wydatki " + Parliament.averageExpenses());
@@ -64,7 +59,7 @@ public class InputParser {
 
     public static String makeUrl(String name, String option){
         String url = "https://api-v3.mojepanstwo.pl/dane/poslowie";
-        Integer id = SejmTracker.parliament.get(name);
+        Integer id = SejmTracker.parliamentMap.get(name);
         if (option.equals("expenses"))
             url = String.join("",url,"/",id.toString(),".json","?layers[]=wydatki");
         if (option.equals("travels"))
@@ -73,7 +68,6 @@ public class InputParser {
             url = String.join("",url,"/"+id.toString(),".json","?layers[]=wydatki&layers[]=wyjazdy");
         if (option.equals("parliament"))
             url = String.join("",url,".json?conditions[poslowie.kadencja]="+name);
-
         return url;
     }
 }

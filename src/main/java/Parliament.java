@@ -4,25 +4,101 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static java.lang.Integer.valueOf;
 
 public class Parliament {
-    private static List<MP> mpList = new ArrayList<>(); //lista mp aktualnej kadencji
+
+    public static Integer getMpList() {
+        return mpList.size();
+    }
+
+    private static List<MP> mpList = new ArrayList<>();//Collections.synchronizedList(new ArrayList<MP>()); //lista mp aktualnej kadencji
+    private static Map<String,Integer> mpMap = new ConcurrentHashMap<>();
+
+//========================================== MAPA WSZYSTKICH POSLOW ==================================
+    public static void makeParliament(List<JSONArray> parlimentLinks){
+        parlimentLinks.parallelStream().forEach(Parliament::addMPMap);
+    }
+
+    private static void addMPMap (JSONArray parliament){
+        for (Object mp : parliament) {
+            JSONObject mpObject = (JSONObject) mp;
+            String id = mpObject.getString("id");
+            String nazwa = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+            mpMap.put(nazwa, valueOf(id));
+        }
+    }
+
+//========================================== LISTA POSLOW PRZETWARZANEJ KADENCJI==================================
+    public static void makeMPList (List<JSONArray> parliamentLinks){
+        parliamentLinks.parallelStream().forEach(Parliament::addMPList);
+    }
+
+    private static void addMPList(JSONArray parliament) {
+        for (Object mp : parliament) {
+            JSONObject mpObject = (JSONObject) mp;
+            Integer id = valueOf(mpObject.getString("id"));
+            String name = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+            JSONObject details = null;
+            try {
+                details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            MP tmpMP = new MP(id,name,details);
+            System.out.println("debug mp : "+tmpMP.toString());
+            mpList.add(tmpMP);
+        }
+    }
+//====================================== METODY DO OBSLUGI POZOSTALYCH ===============================================
+    public static List<JSONArray> prepareParliamentLinks(JSONObject JsonPage) throws IOException {
+        List<JSONArray> result = new ArrayList<>();
+        JSONObject tmpPage;
+        do {
+            tmpPage = JsonPage;
+            JSONArray parliamentPage = JsonPage.getJSONArray("Dataobject");
+            result.add(parliamentPage);
+            String nextLink = getLinkToNext(JsonPage);
+            if (nextLink != null)
+                JsonPage = JsonParser.readJsonFromUrl(nextLink);
+
+        }while (isLinkToNext(tmpPage));
+        return result;
+    }
+
+    private static String getLinkToNext(JSONObject jsonObject) {
+        try { //ostatnia strona nie ma linku next , czy bedzie wtedy exception??/
+            return jsonObject.getJSONObject("Links").getString("next");
+        }catch (JSONException e){
+            return null;
+        }
+    }
+
+    private static Boolean isLinkToNext(JSONObject jsonObject) {
+        try { //ostatnia strona nie ma linku next , czy bedzie wtedy exception??/
+            String s = jsonObject.getJSONObject("Links").getString("next");
+            return true;
+        }catch (JSONException e){
+            return false;
+        }
+    }
+
+//====================================================== PYTANIA DOTYCZACE POSLOW=================================
+    public static Map<String, Integer> getMpMap() {
+        return mpMap;
+    }
 
     public static Double averageExpenses(){
         Double result = 0.0;
-        /*
-        for (MP tmpMp : mpList)
-            result += tmpMp.sumExpenses();
-        result = result/mpList.size();*/
         result = mpList.parallelStream().collect(Collectors.summingDouble(MP::sumExpenses))/mpList.size();
         return result;
     }
-//TODO : "Funkcje wyższego rzędu, java 8"
+    //TODO : "Funkcje wyższego rzędu, java 8"
     public static MP mostTravels(){
         MP member = null;
         Integer tmpMax = -1;
@@ -67,9 +143,15 @@ public class Parliament {
         }*/
         //return memberList;
         return mpList.stream().filter(MP::italyTravels).map(MP::toString).collect(Collectors.toList());
-        //return deputies.stream().filter(Deputy::visitedItaly).map(Deputy::getName).collect(Collectors.toList()).toString();
     }
 
+
+}
+
+//  "Cezary Grabarczyk, Antoni Mężydło, Jan Dziedziczak, Krystyna Skowrońska, Ireneusz Raś, Adam Abramowicz, Michał Jaros, Ewa Kopacz, Anna Nemś, Agnieszka Pomaska, Cezary Tomczyk, Grzegorz Raniewicz, Marek Matuszewski, Roman Jacek Kosecki, Joanna Fabisiak, Sławomir Neumann, Rafał Grupiński, Wojciech Ziemniak, Andrzej Czerwiński, Jakub Rutnicki, Robert Tyszkiewicz, Marek Rząsa, Jacek Falfus, Grzegorz Schetyna, Stefan Niesiołowski"
+
+
+/*
     public static HashMap<String,Integer> makeParliament(JSONObject parliamentObject) throws JSONException, IOException {
         HashMap<String,Integer> result = new HashMap<>();
         Integer pages = getNumberOfLast(parliamentObject);
@@ -99,7 +181,6 @@ public class Parliament {
     }
 
     public static void makeMPList(JSONObject parliamentObject) throws IOException { //tworzy liste MP danej kadencji
-        //TODO : "sprawdzic czy nowy warunek działa"
         JSONObject tmpPage;
         do {
             tmpPage = parliamentObject;
@@ -112,68 +193,11 @@ public class Parliament {
         }while (isLinkToNext(tmpPage));
     }
 
-    private static String getLinkToNext(JSONObject jsonObject) {
-        try { //ostatnia strona nie ma linku next , czy bedzie wtedy exception??/
-            return jsonObject.getJSONObject("Links").getString("next");
-        }catch (JSONException e){
-            return null;
-        }
-    }
-
-    private static Boolean isLinkToNext(JSONObject jsonObject) {
-        try { //ostatnia strona nie ma linku next , czy bedzie wtedy exception??/
-            String s = jsonObject.getJSONObject("Links").getString("next");
-            return true;
-        }catch (JSONException e){
-            return false;
-        }
-    }
-
-    private static Integer getNumberOfLast(JSONObject jsonObject){
+        private static Integer getNumberOfLast(JSONObject jsonObject){
         String last = jsonObject.getJSONObject("Links").getString("last");
         last = new StringBuilder(last).reverse().toString();
         last = last.substring(0,last.indexOf("=")); // czy dobrze indeksy, zakaldam ze parametr page=1 ostatni
         last = new StringBuilder(last).reverse().toString();
         return valueOf(last);
     }
-
-    private static void addMPList(JSONArray parliament) {
-        for (Object mp : parliament) {
-            JSONObject mpObject = (JSONObject) mp;
-            Integer id = valueOf(mpObject.getString("id"));
-            String name = mpObject.getJSONObject("data").getString("ludzie.nazwa");
-            JSONObject details = null;
-            try {
-                details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            MP tmpMP = new MP(id,name,details);
-            mpList.add(tmpMP);
-        }
-    }
-
-    public static List<JSONArray> prepareParliamentLinks(JSONObject JsonPage) throws IOException {
-        List<JSONArray> result = new ArrayList<>();
-        JSONObject tmpPage;
-        do {
-            tmpPage = JsonPage;
-            JSONArray parliamentPage = JsonPage.getJSONArray("Dataobject");
-            result.add(parliamentPage);
-            String nextLink = getLinkToNext(JsonPage);
-            if (nextLink != null)
-                JsonPage = JsonParser.readJsonFromUrl(nextLink);
-
-        }while (isLinkToNext(tmpPage));
-        return result;
-    }
-
-    public static void makeMPList2 (List<JSONArray> parlimentLinks){ //parallel solutipon
-        parlimentLinks.parallelStream().forEach(Parliament::addMPList);
-    }
-
-}
-
-//  "Cezary Grabarczyk, Antoni Mężydło, Jan Dziedziczak, Krystyna Skowrońska, Ireneusz Raś, Adam Abramowicz, Michał Jaros, Ewa Kopacz, Anna Nemś, Agnieszka Pomaska, Cezary Tomczyk, Grzegorz Raniewicz, Marek Matuszewski, Roman Jacek Kosecki, Joanna Fabisiak, Sławomir Neumann, Rafał Grupiński, Wojciech Ziemniak, Andrzej Czerwiński, Jakub Rutnicki, Robert Tyszkiewicz, Marek Rząsa, Jacek Falfus, Grzegorz Schetyna, Stefan Niesiołowski"
-
-
+*/
