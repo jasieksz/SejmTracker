@@ -29,7 +29,7 @@ public class Parliament {
         for (Object mp : parliament) {
             JSONObject mpObject = (JSONObject) mp;
             String id = mpObject.getString("id");
-            String nazwa = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+            String nazwa = mpObject.getJSONObject("data").getString("poslowie.nazwa");
             mpMap.put(nazwa, valueOf(id));
         }
     }
@@ -38,12 +38,11 @@ public class Parliament {
     public static void makeMPList (List<JSONArray> parliamentLinks){
         parliamentLinks.parallelStream().forEach(Parliament::addMPList);
     }
-
     private static void addMPList(JSONArray parliament) {
         for (Object mp : parliament) {
             JSONObject mpObject = (JSONObject) mp;
             Integer id = valueOf(mpObject.getString("id"));
-            String name = mpObject.getJSONObject("data").getString("ludzie.nazwa");
+            String name = mpObject.getJSONObject("data").getString("poslowie.nazwa");
             JSONObject details = null;
             try {
                 details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
@@ -51,7 +50,6 @@ public class Parliament {
                 e.printStackTrace();
             }
             MP tmpMP = new MP(id,name,details);
-            System.out.println("debug mp : "+tmpMP.toString());
             mpList.add(tmpMP);
         }
     }
@@ -95,7 +93,7 @@ public class Parliament {
 
     public static Double averageExpenses(){
         Double result = 0.0;
-        result = mpList.parallelStream().collect(Collectors.summingDouble(MP::sumExpenses))/mpList.size();
+        result = mpList.parallelStream().mapToDouble(MP::sumExpenses).sum() /mpList.size();
         return result;
     }
     //TODO : "Funkcje wyższego rzędu, java 8"
