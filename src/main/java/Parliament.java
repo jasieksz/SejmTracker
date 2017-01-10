@@ -13,12 +13,8 @@ import static java.lang.Integer.valueOf;
 
 public class Parliament {
 
-    public static Integer getMpList() {
-        return mpList.size();
-    }
-
     private static List<MP> mpList = new ArrayList<>();//Collections.synchronizedList(new ArrayList<MP>()); //lista mp aktualnej kadencji
-    private static Map<String,Integer> mpMap = new ConcurrentHashMap<>();
+    public static Map<String,Integer> mpMap = new ConcurrentHashMap<>();
 
 //========================================== MAPA WSZYSTKICH POSLOW ==================================
     public static void makeParliament(List<JSONArray> parlimentLinks){
@@ -37,6 +33,7 @@ public class Parliament {
 //========================================== LISTA POSLOW PRZETWARZANEJ KADENCJI==================================
     public static void makeMPList (List<JSONArray> parliamentLinks){
         parliamentLinks.parallelStream().forEach(Parliament::addMPList);
+        //System.out.println("rozmiar listy mp : "+mpList.size());
     }
     private static void addMPList(JSONArray parliament) {
         for (Object mp : parliament) {
@@ -92,10 +89,13 @@ public class Parliament {
     }
 
     public static Double averageExpenses(){
-        Double result = 0.0;
-        result = mpList.parallelStream().mapToDouble(MP::sumExpenses).sum() /mpList.size();
-        return result;
+        return mpList.parallelStream().mapToDouble(MP::sumExpenses).sum() / mpList.size();
     }
+
+    public static List<String> italyTravels(){
+        return mpList.parallelStream().filter(MP::italyTravels).map(MP::toString).collect(Collectors.toList());
+    }
+
     //TODO : "Funkcje wyższego rzędu, java 8"
     public static MP mostTravels(){
         MP member = null;
@@ -133,17 +133,9 @@ public class Parliament {
         return member;
     }
 
-    public static List<String> italyTravels(){
-        //List<MP> memberList = new ArrayList<>();
-       /* for (MP tmpMp : mpList){
-            if (tmpMp.italyTravels())
-                memberList.add(tmpMp);
-        }*/
-        //return memberList;
-        return mpList.stream().filter(MP::italyTravels).map(MP::toString).collect(Collectors.toList());
+    public static List<MP> getMpList() {
+        return mpList;
     }
-
-
 }
 
 //  "Cezary Grabarczyk, Antoni Mężydło, Jan Dziedziczak, Krystyna Skowrońska, Ireneusz Raś, Adam Abramowicz, Michał Jaros, Ewa Kopacz, Anna Nemś, Agnieszka Pomaska, Cezary Tomczyk, Grzegorz Raniewicz, Marek Matuszewski, Roman Jacek Kosecki, Joanna Fabisiak, Sławomir Neumann, Rafał Grupiński, Wojciech Ziemniak, Andrzej Czerwiński, Jakub Rutnicki, Robert Tyszkiewicz, Marek Rząsa, Jacek Falfus, Grzegorz Schetyna, Stefan Niesiołowski"

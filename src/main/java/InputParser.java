@@ -8,14 +8,14 @@ import java.util.stream.Collectors;
 
 public class InputParser {
 
-    //TODO : "CHANGE run to String method, change all System.out.println() to return"
 
-    private static List<String> polecenia = Arrays.asList("sumexpenses","smallexpenses","avgexpenses","italytravels","expensivetravels","longesttravels","mosttravels");
+    private static List<String> polecenia = Arrays.asList("everything","sumexpenses","smallexpenses","avgexpenses","italytravels","expensivetravels","longesttravels","mosttravels");
 
-    public static String run(String[] args) throws IOException, JSONException, IndexOutOfBoundsException, IllegalArgumentException {
+    public static String run(String[] args) throws IOException, JSONException, IllegalArgumentException {
 
         if(args.length != 2)
             throw new IllegalArgumentException("Zła ilość argumentów"+"\n"+"INSTRUKCJA OBSLUGI PROGRAMU ...");
+
         if(polecenia.stream().filter(w -> w.contains(args[0])).collect(Collectors.toCollection(ArrayList::new)).isEmpty())
             throw new IllegalArgumentException("Nie ma takiego polecenia");
 
@@ -23,8 +23,8 @@ public class InputParser {
         //1 POSEL - suma wydatkow
         if(args[0].equals("sumexpenses")) {
             name = args[1];
-            if (SejmTracker.parliamentMap.containsKey(name)) {
-                Integer id = SejmTracker.parliamentMap.get(name);
+            if (Parliament.mpMap.containsKey(name)) {
+                Integer id = Parliament.mpMap.get(name);
                 MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
                 return (mp.toString() + " wszystkie wydatki " + mp.sumExpenses().toString());
             }
@@ -34,13 +34,26 @@ public class InputParser {
         //1 POSEL - drobne wydatki na naprawy
         else if(args[0].equals("smallexpenses")) {
             name = args[1];
-            if (SejmTracker.parliamentMap.containsKey(name)) {
-                Integer id = SejmTracker.parliamentMap.get(name);
+            if (Parliament.mpMap.containsKey(name)) {
+                Integer id = Parliament.mpMap.get(name);
                 MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
                 return (mp.toString() + " male wydatki " + mp.smallExpenses().toString());
             }
             else
                 throw new IllegalArgumentException("Taki poseł nie istnieje");
+        }
+
+        else if (args[0].equals("everything")){
+            name = args[1];
+            Integer id = Parliament.mpMap.get(name);
+            MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "everything")));
+            return (mp.toString() +"\n"
+                    + " wszystkie wydatki " + mp.sumExpenses().toString() +"\n"
+                    + " małe wydatki "+mp.smallExpenses().toString() + "\n"
+                    + " liczba podroz "+mp.numberTravels().toString() + "\n"
+                    + " najdluzsza pdoroz "+mp.timeTravels().toString() +"\n"
+                    + " najdrozszy wyjazd "+mp.costTravels().toString() +"\n"
+                    + " wloskie podrize " + mp.italyTravels().toString()+"\n");
         }
         //CALY PARLAMENT
         else {
@@ -67,7 +80,7 @@ public class InputParser {
 
     public static String makeUrl(String name, String option){
         String url = "https://api-v3.mojepanstwo.pl/dane/poslowie";
-        Integer id = SejmTracker.parliamentMap.get(name);
+        Integer id = Parliament.mpMap.get(name);
         if (option.equals("expenses"))
             url = String.join("",url,"/",id.toString(),".json","?layers[]=wydatki");
         if (option.equals("travels"))
@@ -75,7 +88,7 @@ public class InputParser {
         if (option.equals("everything"))
             url = String.join("",url,"/"+id.toString(),".json","?layers[]=wydatki&layers[]=wyjazdy");
         if (option.equals("parliament"))
-            url = String.join("",url,".json?conditions[poslowie.kadencja]="+name);
+            url = String.join("",url,".json?conditions[poslowie.kadencja]="+name+"&limit=119");
         return url;
     }
 }
