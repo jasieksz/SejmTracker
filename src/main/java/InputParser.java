@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 public class InputParser {
 
 
-    private static List<String> polecenia = Arrays.asList("everything","sumexpenses","smallexpenses","avgexpenses","italytravels","expensivetravels","longesttravels","mosttravels");
+    private static List<String> polecenia = Arrays.asList("sum","repairs","all","avg","number","time","cost","italy");
 
     public static String run(String[] args) throws IOException, JSONException, IllegalArgumentException {
 
@@ -17,11 +17,11 @@ public class InputParser {
             throw new IllegalArgumentException("Zła ilość argumentów"+"\n"+"INSTRUKCJA OBSLUGI PROGRAMU ...");
 
         if(polecenia.stream().filter(w -> w.contains(args[0])).collect(Collectors.toCollection(ArrayList::new)).isEmpty())
-            throw new IllegalArgumentException("Nie ma takiego polecenia");
+            throw new IllegalArgumentException("Nie ma takiego polecenia" +"\n"+polecenia.toString());
 
         String name;
         //1 POSEL - suma wydatkow
-        if(args[0].equals("sumexpenses")) {
+        if(args[0].equals("sum")) {
             name = args[1];
             if (Parliament.mpMap.containsKey(name)) {
                 Integer id = Parliament.mpMap.get(name);
@@ -32,7 +32,7 @@ public class InputParser {
                 throw new IllegalArgumentException("Taki poseł nie istnieje");
         }
         //1 POSEL - drobne wydatki na naprawy
-        else if(args[0].equals("smallexpenses")) {
+        else if(args[0].equals("repairs")) {
             name = args[1];
             if (Parliament.mpMap.containsKey(name)) {
                 Integer id = Parliament.mpMap.get(name);
@@ -43,17 +43,21 @@ public class InputParser {
                 throw new IllegalArgumentException("Taki poseł nie istnieje");
         }
 
-        else if (args[0].equals("everything")){
+        else if (args[0].equals("all")){
             name = args[1];
-            Integer id = Parliament.mpMap.get(name);
-            MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "everything")));
-            return (mp.toString() +"\n"
-                    + " wszystkie wydatki " + mp.sumExpenses().toString() +"\n"
-                    + " małe wydatki "+mp.smallExpenses().toString() + "\n"
-                    + " liczba podroz "+mp.numberTravels().toString() + "\n"
-                    + " najdluzsza pdoroz "+mp.timeTravels().toString() +"\n"
-                    + " najdrozszy wyjazd "+mp.costTravels().toString() +"\n"
-                    + " wloskie podrize " + mp.italyTravels().toString()+"\n");
+            if( Parliament.mpMap.containsKey(name)) {
+                Integer id = Parliament.mpMap.get(name);
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "everything")));
+                return (mp.toString() + "\n"
+                        + " wszystkie wydatki " + mp.sumExpenses().toString() + "\n"
+                        + " małe wydatki " + mp.smallExpenses().toString() + "\n"
+                        + " liczba podroz " + mp.numberTravels().toString() + "\n"
+                        + " najdluzsza pdoroz " + mp.timeTravels().toString() + "\n"
+                        + " najdrozszy wyjazd " + mp.costTravels().toString() + "\n"
+                        + " wloskie podrize " + mp.italyTravels().toString() + "\n");
+            }
+            else
+                throw new IllegalArgumentException("Taki poseł nie istnieje");
         }
         //CALY PARLAMENT
         else {
@@ -63,15 +67,15 @@ public class InputParser {
 
             Parliament.makeMPList(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(makeUrl(name, "parliament"))));
 
-            if (args[0].equals("avgexpenses"))
+            if (args[0].equals("avg"))
                 return ("Srednie wydatki " + Parliament.averageExpenses().toString());
-            else if (args[0].equals("mosttravels"))
+            else if (args[0].equals("number"))
                 return ("Najwiecej podrozy " + Parliament.mostTravels().toString());
-            else if (args[0].equals("longesttravels"))
+            else if (args[0].equals("time"))
                 return ("Najdluza podroz " + Parliament.longestTravels().toString());
-            else if (args[0].equals("expensivetravels"))
+            else if (args[0].equals("cost"))
                 return ("Najdrozsza podroz " + Parliament.expensiveTravels().toString());
-            else if (args[0].equals("italytravels"))
+            else if (args[0].equals("italy"))
                 return ("Wloskie podroze " + Parliament.italyTravels().toString());
         }
         return null;
@@ -98,5 +102,5 @@ sumexpenses "Jan Kowalski"  //posel jan kowalski, jego srednie wyadtki
 avgexpenses 7 //srednie wydatki poslow 7 kadencji
 longesttravels 8 //posel 8 kadencji, najdluzsza podroz
 
-
+"sum","repairs","all","avg","number","time","cost","italy"
  */

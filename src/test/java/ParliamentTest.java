@@ -23,11 +23,11 @@ public class ParliamentTest {
     public void averageExpensesTest() throws Exception {
         assertEquals(144882.96,Parliament.averageExpenses(),0.01);
     }
-/*
+
     @Test
     public void italyTravelsTest() throws Exception {
-
-    }*/
+        assertEquals(25,Parliament.italyTravels().size());
+    }
 
     @Test
     public void mostTravelsTest() throws Exception {
