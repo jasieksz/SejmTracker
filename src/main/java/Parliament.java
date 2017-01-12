@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +14,7 @@ import static java.lang.Integer.valueOf;
 
 public class Parliament {
 
-    private static List<MP> mpList = new ArrayList<>();//Collections.synchronizedList(new ArrayList<MP>()); //lista mp aktualnej kadencji
+    private static List<MP> mpList = Collections.synchronizedList(new ArrayList<MP>()); //lista mp aktualnej kadencji
     public static Map<String,Integer> mpMap = new ConcurrentHashMap<>();
 
 //========================================== MAPA WSZYSTKICH POSLOW ==================================

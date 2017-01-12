@@ -8,7 +8,7 @@ public class SejmTracker {
     private final static String allMPsUrl = "https://api-v3.mojepanstwo.pl/dane/poslowie.json?limit=186";
 
     private static String prop1 = "java.util.concurrent.ForkJoinPool.common.parallelism";
-    private static String threads = "33";
+    private static String threads = "4";
 
 
     public static void main(String[] args) {
@@ -26,8 +26,6 @@ public class SejmTracker {
             System.out.println(e.getMessage());
         }
     }
-
-    //TODO : "Catching exceptions"
     private static String run(String[] args) throws IllegalArgumentException{
         try {
             Parliament.makeParliament(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(allMPsUrl)));
@@ -42,6 +40,3 @@ public class SejmTracker {
         return null;
     }
 }
-//149331.12
-
-//"Rafał Grupiński, Joanna Fabisiak, Andrzej Czerwiński, Cezary Grabarczyk, Agnieszka Pomaska, Jan Dziedziczak, Grzegorz Raniewicz, Antoni Mężydło, Roman Jacek Kosecki, Ireneusz Raś, Grzegorz Schetyna, Stefan Niesiołowski, Sławomir Neumann, Jakub Rutnicki, Krystyna Skowrońska, Jacek Falfus, Adam Abramowicz, Ewa Kopacz, Anna Nemś, Robert Tyszkiewicz, Marek Rząsa, Cezary Tomczyk, Michał Jaros, Marek Matuszewski, Wojciech Ziemniak"

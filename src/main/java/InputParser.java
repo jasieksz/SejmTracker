@@ -67,16 +67,18 @@ public class InputParser {
 
             Parliament.makeMPList(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(makeUrl(name, "parliament"))));
 
-            if (args[0].equals("avg"))
-                return ("Srednie wydatki " + Parliament.averageExpenses().toString());
-            else if (args[0].equals("number"))
-                return ("Najwiecej podrozy " + Parliament.mostTravels().toString());
-            else if (args[0].equals("time"))
-                return ("Najdluza podroz " + Parliament.longestTravels().toString());
-            else if (args[0].equals("cost"))
-                return ("Najdrozsza podroz " + Parliament.expensiveTravels().toString());
-            else if (args[0].equals("italy"))
-                return ("Wloskie podroze " + Parliament.italyTravels().toString());
+            switch (args[0]) {
+                case "avg":
+                    return ("Srednie wydatki " + Parliament.averageExpenses().toString());
+                case "number":
+                    return ("Najwiecej podrozy " + Parliament.mostTravels().toString());
+                case "time":
+                    return ("Najdluza podroz " + Parliament.longestTravels().toString());
+                case "cost":
+                    return ("Najdrozsza podroz " + Parliament.expensiveTravels().toString());
+                case "italy":
+                    return ("Wloskie podroze " + Parliament.italyTravels().toString());
+            }
         }
         return null;
     }
