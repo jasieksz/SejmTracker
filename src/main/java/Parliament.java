@@ -14,41 +14,56 @@ import static java.lang.Integer.valueOf;
 
 public class Parliament {
 
-    private static List<MP> mpList = Collections.synchronizedList(new ArrayList<MP>()); //lista mp aktualnej kadencji
-    public static Map<String,Integer> mpMap = new ConcurrentHashMap<>();
+    private final static String allMPsUrl = "https://api-v3.mojepanstwo.pl/dane/poslowie.json?limit=186";
+    private final Integer kadencja;
+    private List<MP> mpList = Collections.synchronizedList(new ArrayList<MP>()); //lista mp aktualnej kadencji
+    public Map<String,Integer> mpMap = new ConcurrentHashMap<>();
 
-//========================================== MAPA WSZYSTKICH POSLOW ==================================
-    public static void makeParliament(List<JSONArray> parlimentLinks){
-        parlimentLinks.parallelStream().forEach(Parliament::addMPMap);
+
+    public Parliament(Integer kadencja) throws IOException {
+        this.kadencja = kadencja;
+        makeMPList(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(InputParser.makeUrl(this.kadencja.toString(),0, "parliament"))));
+        makeParliament(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(allMPsUrl)));
     }
 
-    private static void addMPMap (JSONArray parliament){
+    public Parliament() throws IOException { //1 posel
+        this.kadencja = null;
+        makeParliament(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(allMPsUrl)));
+    }
+
+//========================================== MAPA WSZYSTKICH POSLOW ==================================
+    public void makeParliament(List<JSONArray> parlimentLinks){
+        parlimentLinks.parallelStream().forEach(this::addMPMap);
+    }
+
+    private void addMPMap (JSONArray parliament){
         for (Object mp : parliament) {
             JSONObject mpObject = (JSONObject) mp;
             String id = mpObject.getString("id");
             String nazwa = mpObject.getJSONObject("data").getString("poslowie.nazwa");
-            mpMap.put(nazwa, valueOf(id));
+            this.mpMap.put(nazwa, valueOf(id));
         }
     }
 
 //========================================== LISTA POSLOW PRZETWARZANEJ KADENCJI==================================
-    public static void makeMPList (List<JSONArray> parliamentLinks){
-        parliamentLinks.parallelStream().forEach(Parliament::addMPList);
+    private void makeMPList (List<JSONArray> parliamentLinks){
+        parliamentLinks.parallelStream().forEach(this::addMPList);
         //System.out.println("rozmiar listy mp : "+mpList.size());
     }
-    private static void addMPList(JSONArray parliament) {
+    private void addMPList(JSONArray parliament) {
         for (Object mp : parliament) {
             JSONObject mpObject = (JSONObject) mp;
             Integer id = valueOf(mpObject.getString("id"));
             String name = mpObject.getJSONObject("data").getString("poslowie.nazwa");
             JSONObject details = null;
             try {
-                details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,"everything"));
+                details = JsonParser.readJsonFromUrl(InputParser.makeUrl(name,id,"everything"));
             } catch (IOException e) {
                 e.printStackTrace();
             }
             MP tmpMP = new MP(id,name,details);
-            mpList.add(tmpMP);
+            this.mpList.add(tmpMP);
+            //System.out.println(tmpMP.toString());
         }
     }
 //====================================== METODY DO OBSLUGI POZOSTALYCH ===============================================
@@ -85,20 +100,22 @@ public class Parliament {
     }
 
 //====================================================== PYTANIA DOTYCZACE POSLOW=================================
-    public static Map<String, Integer> getMpMap() {
-        return mpMap;
+    public Map<String, Integer> getMpMap() {
+        return this.mpMap;
     }
 
-    public static Double averageExpenses(){
+    public Double averageExpenses(){
         return mpList.parallelStream().mapToDouble(MP::sumExpenses).sum() / mpList.size();
+       // return round(value * 100)/100.00;
     }
 
-    public static List<String> italyTravels(){
+    public List<String> italyTravels(){
         return mpList.parallelStream().filter(MP::italyTravels).map(MP::toString).collect(Collectors.toList());
     }
 
+
     //TODO : "Funkcje wyższego rzędu, java 8"
-    public static MP mostTravels(){
+    public MP mostTravels(){
         MP member = null;
         Integer tmpMax = -1;
         for (MP tmpMp : mpList){
@@ -110,7 +127,7 @@ public class Parliament {
         return member;
     }
 
-    public static MP longestTravels(){
+    public MP longestTravels(){
         MP member = null;
         Integer tmpMax = -1;
         for (MP tmpMp : mpList){
@@ -122,7 +139,7 @@ public class Parliament {
         return member;
     }
 
-    public static MP expensiveTravels(){
+    public MP expensiveTravels(){
         MP member = null;
         Double tmpMax = -1.0;
         for (MP tmpMp : mpList){
@@ -134,7 +151,7 @@ public class Parliament {
         return member;
     }
 
-    public static List<MP> getMpList() {
+    public List<MP> getMpList() {
         return mpList;
     }
 }

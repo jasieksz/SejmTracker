@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.lang.Integer.valueOf;
+
 public class InputParser {
 
 
@@ -23,9 +25,10 @@ public class InputParser {
         //1 POSEL - suma wydatkow
         if(args[0].equals("sum")) {
             name = args[1];
-            if (Parliament.mpMap.containsKey(name)) {
-                Integer id = Parliament.mpMap.get(name);
-                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
+            Parliament parliament = new Parliament();
+            if (parliament.mpMap.containsKey(name)) {
+                Integer id = parliament.mpMap.get(name);
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name,id, "expenses")));
                 return (mp.toString() + " wszystkie wydatki " + mp.sumExpenses().toString());
             }
             else
@@ -34,9 +37,10 @@ public class InputParser {
         //1 POSEL - drobne wydatki na naprawy
         else if(args[0].equals("repairs")) {
             name = args[1];
-            if (Parliament.mpMap.containsKey(name)) {
-                Integer id = Parliament.mpMap.get(name);
-                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "expenses")));
+            Parliament parliament = new Parliament();
+            if (parliament.mpMap.containsKey(name)) {
+                Integer id = parliament.mpMap.get(name);
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name,id, "expenses")));
                 return (mp.toString() + " male wydatki " + mp.smallExpenses().toString());
             }
             else
@@ -45,9 +49,10 @@ public class InputParser {
 
         else if (args[0].equals("all")){
             name = args[1];
-            if( Parliament.mpMap.containsKey(name)) {
-                Integer id = Parliament.mpMap.get(name);
-                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name, "everything")));
+            Parliament parliament = new Parliament();
+            if( parliament.mpMap.containsKey(name)) {
+                Integer id = parliament.mpMap.get(name);
+                MP mp = new MP(id, name, JsonParser.readJsonFromUrl(makeUrl(name,id, "everything")));
                 return (mp.toString() + "\n"
                         + " wszystkie wydatki " + mp.sumExpenses().toString() + "\n"
                         + " małe wydatki " + mp.smallExpenses().toString() + "\n"
@@ -64,29 +69,27 @@ public class InputParser {
             name = args[1]; // name to numer kadnecji ---> w makeUrl tworzy się odpowiedni adres
             if (!name.equals("7") && !name.equals("8"))
                 throw new IllegalArgumentException("Nie ma takiej kadencji");
-
-            Parliament.makeMPList(Parliament.prepareParliamentLinks(JsonParser.readJsonFromUrl(makeUrl(name, "parliament"))));
+            Parliament parliament = new Parliament(valueOf(name));
 
             switch (args[0]) {
                 case "avg":
-                    return ("Srednie wydatki " + Parliament.averageExpenses().toString());
+                    return ("Srednie wydatki " + parliament.averageExpenses().toString());
                 case "number":
-                    return ("Najwiecej podrozy " + Parliament.mostTravels().toString());
+                    return ("Najwiecej podrozy " + parliament.mostTravels().toString());
                 case "time":
-                    return ("Najdluza podroz " + Parliament.longestTravels().toString());
+                    return ("Najdluza podroz " + parliament.longestTravels().toString());
                 case "cost":
-                    return ("Najdrozsza podroz " + Parliament.expensiveTravels().toString());
+                    return ("Najdrozsza podroz " + parliament.expensiveTravels().toString());
                 case "italy":
-                    return ("Wloskie podroze " + Parliament.italyTravels().toString());
+                    return ("Wloskie podroze " + parliament.italyTravels().toString());
             }
         }
         return null;
     }
 
 
-    public static String makeUrl(String name, String option){
+    public static String makeUrl(String name, Integer id, String option){
         String url = "https://api-v3.mojepanstwo.pl/dane/poslowie";
-        Integer id = Parliament.mpMap.get(name);
         if (option.equals("expenses"))
             url = String.join("",url,"/",id.toString(),".json","?layers[]=wydatki");
         if (option.equals("travels"))
